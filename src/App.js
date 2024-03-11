@@ -24,6 +24,7 @@ function App() {
 
     setCities((prevCities) => [...prevCities, formattedCity]);
     setTextInputValue(""); // clear input field after adding the new city
+    setCity(formattedCity);
 
     // scroll to the end of the cities-container (after new button has been added)
     setTimeout(() => {
