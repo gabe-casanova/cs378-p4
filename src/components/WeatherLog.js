@@ -9,7 +9,16 @@ const WeatherLog = ({ name }) => {
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const formatDate = (date) => {
+    return date.toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   useEffect(() => {
+    setLoading(true); // start loading
+
     // fetch city's latitude/longitude coordinates
     getLocationData(name)
       .then((locationData) => {
@@ -29,26 +38,26 @@ const WeatherLog = ({ name }) => {
           .then((weatherData) => {
             // get current temperature in fahrenheit
             const { currentTemperature } = weatherData.current;
-            setCurrTemp(((currentTemperature * 9) / 5 + 32).toFixed(2));
-            
+            setCurrTemp(((currentTemperature * 9) / 5 + 32).toFixed(0));
+
             // extract hourly weather data
             const { time, temperature2m } = weatherData.hourly;
-            const formattedDays = time.map((t) => t.toDateString());
+            const formattedDays = time.map((t) => formatDate(t));
             const uniqueDays = [...new Set(formattedDays)];
             const degrees = time.map((t, index) => {
-              // day of the week ("Fri Mar 08 2024")
-              const day = t.toDateString();
+              // day of the week ("March 8")
+              const day = formatDate(t);
 
-              // time of day ("6pm")
+              // time of day ("6p")
               const hours = t.getHours();
-              const ampm = hours >= 12 ? "PM" : "AM";
+              const ampm = hours >= 12 ? "p" : "a";
               const formattedHours = hours % 12 || 12; // no military time
               const time = formattedHours + ampm;
 
               // degree in fahrenheit
               const celsius = temperature2m[index];
               const fahrenheit = (celsius * 9) / 5 + 32;
-              const degree = fahrenheit.toFixed(2);
+              const degree = fahrenheit.toFixed(0);
 
               return [day, time, degree];
             });
@@ -63,30 +72,40 @@ const WeatherLog = ({ name }) => {
       })
       .catch((error) => {
         console.error("Error fetching location data:", error);
+        setLoading(false);
       });
   }, [name]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="loading-screen">Loading...</div>;
   }
 
-  // console.log(currTemp);
+  const renderDegreesForDay = (day) => {
+    return degrees
+      .filter((degree) => degree[0] === day)
+      .map((degree, index) => (
+        <tr key={index}>
+          <td className="hour">{degree[1]}</td>
+          <td className="degree">{degree[2]}°</td>
+        </tr>
+      ));
+  };
 
   return (
     <>
-      <div>
-        <h2>Location Information:</h2>
-        <p>Name: {location.name}</p>
-        <p>Latitude: {location.latitude}</p>
-        <p>Longitude: {location.longitude}</p>
+      <div className="city-header-container">
+        <h2 id="city-name">{location.name}</h2>
+        <span id="city-temperature">{currTemp}° F</span>
       </div>
-      <div>
-        <h2>Degrees Information:</h2>
-        {degrees.map((degree, index) => (
-          <div key={index}>
-            <p>Day: {degree[0]}</p>
-            <p>Time: {degree[1]}</p>
-            <p>Degree: {degree[2]}</p>
+      <div className="weather-log-container">
+        {days.map((day, dayIndex) => (
+          <div key={dayIndex}>
+            <h3 className="day-header">{day}</h3>
+            <div className="table-container">
+              <table>
+                <tbody>{renderDegreesForDay(day)}</tbody>
+              </table>
+            </div>
           </div>
         ))}
       </div>
