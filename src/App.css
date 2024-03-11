@@ -72,9 +72,15 @@ body {
 }
 
 table {
-  background-color: #7c955158;
+  background-color: #7c95518c;
   border-radius: 15px;
   padding: 12.5px 17.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.current-hour-row {
+  color: #e6ecdf;
+  font-weight: bold;
 }
 
 .hour {
@@ -84,7 +90,7 @@ table {
   padding-bottom: 5px;
 }
 
-.degree {
+.temp {
   padding-bottom: 5px;
 }
 

@@ -30,7 +30,7 @@ const WeatherLog = ({ name }) => {
           longitude,
           current: "temperature_2m",
           hourly: "temperature_2m",
-          forecast_days: 1,
+          forecast_days: 3,
         };
 
         // fetch city's weather data
@@ -80,15 +80,36 @@ const WeatherLog = ({ name }) => {
     return <div className="loading-screen">Loading...</div>;
   }
 
+  const currentSystemDay = new Date().toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+  });
+
+  const currentSystemHour = new Date()
+    .toLocaleString("en-US", {
+      hour: "numeric",
+      hour12: true,
+    })
+    .toLowerCase()
+    .replace(/\s/, "")
+    .slice(0, -1); // "4pm" -> "4p"
+
   const renderDegreesForDay = (day) => {
     return degrees
       .filter((degree) => degree[0] === day)
-      .map((degree, index) => (
-        <tr key={index}>
-          <td className="hour">{degree[1]}</td>
-          <td className="degree">{degree[2]}°</td>
-        </tr>
-      ));
+      .map((degree, index) => {
+        const hour = degree[1];
+        const temperature = degree[2];
+        const isCurrentHour =
+          day === currentSystemDay && hour === currentSystemHour;
+        const rowClassName = isCurrentHour ? "current-hour-row" : "";
+        return (
+          <tr key={index} className={rowClassName}>
+            <td className="hour">{hour}</td>
+            <td className="temp">{temperature}°</td>
+          </tr>
+        );
+      });
   };
 
   return (
@@ -100,7 +121,10 @@ const WeatherLog = ({ name }) => {
       <div className="weather-log-container">
         {days.map((day, dayIndex) => (
           <div key={dayIndex}>
-            <h3 className="day-header">{day}</h3>
+            <h3 className="day-header">
+              {day === currentSystemDay ? "☆ " : null}
+              {day}
+            </h3>
             <div className="table-container">
               <table>
                 <tbody>{renderDegreesForDay(day)}</tbody>
